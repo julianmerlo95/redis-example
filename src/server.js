@@ -24,9 +24,9 @@ app.get(`${API_BASE_PATH}/photos`, async (req, res) => {
             const response = redisValue;
             res.json(JSON.parse(response));
         } else {
-            const data = getPhotos();
-            setRedisKey(REDIS_PHOTOS_KEY, data);
-            res.json(data);
+            const response = getPhotos();
+            setRedisKey(REDIS_PHOTOS_KEY, response);
+            res.json(response);
         }
     } catch (error) {
         console.error(`Error finding redis value, ${error}`);
