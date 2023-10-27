@@ -17,13 +17,14 @@ const redisClient = redis.createClient();
 // Route
 app.get("/api/photos", async (req, res) => {
     try {
-        let redisValue = await redisClient.get(REDIS_KEY);
+        const redisValue = await redisClient.get(REDIS_KEY);
 
         if (redisValue != null) {
-            res.json(JSON.parse(redisValue));
+            const response = redisValue;
+            res.json(JSON.parse(response));
         } else {
-            const { data } = await axios.get(`${API_BASE_URI}/photos`);
-            await redisClient.setEx(REDIS_KEY, REDIS_DEFAULT_EXPIRATION, JSON.stringify(data));
+            const data = getPhotos();
+            setRedisKey(REDIS_KEY, data);
             res.json(data);
         }
     } catch (error) {
@@ -31,6 +32,15 @@ app.get("/api/photos", async (req, res) => {
         throw error;
     }
 });
+
+async function getPhotos() {
+    const { data } = await axios.get(`${API_BASE_URI}/photos`);
+    return data;
+}
+
+async function setRedisKey(key, data) {
+    await redisClient.setEx(key, REDIS_DEFAULT_EXPIRATION, JSON.stringify(data));
+}
 
 // Server
 app.listen(API_PORT, async () => {
