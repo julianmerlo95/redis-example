@@ -8,23 +8,24 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 const REDIS_DEFAULT_EXPIRATION = 2500;
-const REDIS_KEY = "photos";
-const API_BASE_URI = "https://jsonplaceholder.typicode.com";
+const REDIS_PHOTOS_KEY = "photos";
+const API_BASE_EXTERNAL_URI = "https://jsonplaceholder.typicode.com";
+const API_BASE_PATH = "/api";
 const API_PORT = process.env.PORT || 3000;
 
 const redisClient = redis.createClient();
 
 // Route
-app.get("/api/photos", async (req, res) => {
+app.get(`${API_BASE_PATH}/photos`, async (req, res) => {
     try {
-        const redisValue = await redisClient.get(REDIS_KEY);
+        const redisValue = await redisClient.get(REDIS_PHOTOS_KEY);
 
         if (redisValue != null) {
             const response = redisValue;
             res.json(JSON.parse(response));
         } else {
             const data = getPhotos();
-            setRedisKey(REDIS_KEY, data);
+            setRedisKey(REDIS_PHOTOS_KEY, data);
             res.json(data);
         }
     } catch (error) {
@@ -34,7 +35,7 @@ app.get("/api/photos", async (req, res) => {
 });
 
 async function getPhotos() {
-    const { data } = await axios.get(`${API_BASE_URI}/photos`);
+    const { data } = await axios.get(`${API_BASE_EXTERNAL_URI}/photos`);
     return data;
 }
 
